@@ -3,6 +3,7 @@ package view;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupState;
 import interface_adapter.signup.SignupViewModel;
+import interface_adapter.clear_users.ClearController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 public class SignupView extends JPanel implements ActionListener, PropertyChangeListener {
     public final String viewName = "sign up";
@@ -27,11 +29,15 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
     // TODO Note: this is the new JButton for clearing the users file
     private final JButton clear;
+    private ClearController clearController;
 
-    public SignupView(SignupController controller, SignupViewModel signupViewModel) {
+
+    public SignupView(SignupController controller, SignupViewModel signupViewModel, ClearController clearController) {
 
         this.signupController = controller;
         this.signupViewModel = signupViewModel;
+        this.clearController = clearController;
+
         signupViewModel.addPropertyChangeListener(this);
 
         JLabel title = new JLabel(SignupViewModel.TITLE_LABEL);
@@ -54,6 +60,8 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         //      a CLEAR_BUTTON_LABEL constant which is defined in the SignupViewModel class.
         //      You need to add this "clear" button to the "buttons" panel.
         clear = new JButton(SignupViewModel.CLEAR_BUTTON_LABEL);
+        buttons.add(clear);
+
 
         signUp.addActionListener(
                 // This creates an anonymous subclass of ActionListener and instantiates it.
@@ -79,7 +87,15 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        clearController.execute();
+                        List<String> deletedUsers = clearController.getDeletedUsers();
 
+                        if (deletedUsers.isEmpty()) {
+                            JOptionPane.showMessageDialog(SignupView.this, "No users were deleted.");
+                        } else {
+                            String deletedUsersStr = String.join(", ", deletedUsers);
+                            JOptionPane.showMessageDialog(SignupView.this, "Deleted users: " + deletedUsersStr);
+                        }
                     }
                 }
         );

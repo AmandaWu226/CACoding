@@ -2,16 +2,15 @@ package data_access;
 
 import entity.User;
 import entity.UserFactory;
+import use_case.clear_users.ClearUserDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
-public class FileUserDataAccessObject implements SignupUserDataAccessInterface, LoginUserDataAccessInterface {
+public class FileUserDataAccessObject implements SignupUserDataAccessInterface, LoginUserDataAccessInterface, ClearUserDataAccessInterface {
 
     private final File csvFile;
 
@@ -20,6 +19,7 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface, 
     private final Map<String, User> accounts = new HashMap<>();
 
     private UserFactory userFactory;
+    private List<String> usersDeleted = new ArrayList<>();
 
     public FileUserDataAccessObject(String csvPath, UserFactory userFactory) throws IOException {
         this.userFactory = userFactory;
@@ -84,7 +84,24 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface, 
             throw new RuntimeException(e);
         }
     }
+    @Override
+    public void clearAllUsers() {
+        usersDeleted.clear();
+        usersDeleted.addAll(accounts.keySet());
 
+        accounts.clear();
+        try {
+            new PrintWriter(csvFile).close();
+            save();
+        } catch (IOException e) {
+            throw new RuntimeException("Error clearing user data file.", e);
+        }
+    }
+
+    @Override
+    public List<String> getUsersDeleted() {
+        return usersDeleted;
+    }
 
     /**
      * Return whether a user exists with username identifier.
